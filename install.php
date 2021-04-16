@@ -16,6 +16,14 @@ function wp_install_defaults($user_id)
 {
     global $wpdb, $wp_rewrite, $table_prefix;
 
+
+    /**
+     * CATEGORIES' SETUP
+     */
+
+    /**
+     * Setup custom first category.
+     */
     $cat_id = 1;
     $cat_name = __('General');
     $cat_slug = sanitize_title(_x('general', 'Slug de la categoría por defecto'));
@@ -41,6 +49,20 @@ function wp_install_defaults($user_id)
             'count'       => 1,
         )
     );
+
+    /**
+     * Setup other categories.
+     */
+
+
+    /**
+     * PAGES' SETUP
+     */
+
+
+    /**
+     * Setup home page
+     */
 
     $content_id = 1;
     $now             = current_time('mysql');
@@ -104,6 +126,14 @@ function wp_install_defaults($user_id)
 
     $content_id++;
 
+    update_option('show_on_front', 'page');
+    update_option('page_on_front', $homepage_id);
+
+
+    /**
+     * Setup blog page
+     */
+
     $blogpage_guid = get_option('home') . '/?page_id=' . $content_id;
 
     $wpdb->insert(
@@ -137,12 +167,15 @@ function wp_install_defaults($user_id)
         )
     );
 
-    update_option('show_on_front', 'page');
-    update_option('page_on_front', $homepage_id);
     update_option('page_for_posts', $blogpage_id);
 
-    if (file_exists(WP_CONTENT_DIR . '/privacidad.txt')) {
-        $privacy_policy_content =  file_get_contents('privacidad.txt', true);
+
+    /**
+     * Setup privacy policy page
+     */
+
+    if (file_exists(WP_CONTENT_DIR . '/privacy.txt')) {
+        $privacy_policy_content =  file_get_contents('privacy.txt', true);
     } else {
         if (!class_exists('WP_Privacy_Policy_Content')) {
             include_once(ABSPATH . 'wp-admin/includes/misc.php');
@@ -188,19 +221,94 @@ function wp_install_defaults($user_id)
 
     $content_id++;
 
+
+    /**
+     * Setup cookies policy page
+     * 
+     * @ToDo
+     */
+
+
+    /**
+     * Setup utc page
+     * 
+     * @ToDo
+     */
+
+
+    /**
+     * Setup about page
+     * 
+     * @ToDo
+     */
+
+
+    /**
+     * Setup contact page
+     * 
+     * @ToDo
+     */
+
+
+    /**
+     * MENUS' SETUP
+     * 
+     * @ToDo
+     */
+
+
+    /**
+     * OPTIONS' SETUP
+     */
+
     update_user_meta($user_id, 'show_welcome_panel', 1);
 
     update_option('selection', 'custom');
+
+
+    /**
+     * Setup permalink structure and update permalinks
+     */
     update_option('permalink_structure', '/%postname%/');
     $wp_rewrite->init();
     $wp_rewrite->flush_rules();
 
+
+
+    /**
+     * Setup date&time setup
+     */
     update_option('date_format', 'd/m/Y');
     update_option('links_updated_date_format', 'd/m/Y H:i');
-    update_option('start_of_week', 1);
     update_option('time_format', 'H:i');
+
+
+    /**
+     * Setup the start of the week to Monday
+     */
+    update_option('start_of_week', 1);
+
+
+    /**
+     * Setup timezone
+     */
     update_option('timezone_string', 'Europe/Madrid');
+
+
+    /**
+     * Disable the year/month folder structure inside the uploads folder
+     */
     update_option('uploads_use_yearmonth_folders', 0);
+
+
+    /**
+     * Disable smilies
+     */
     update_option('use_smilies', 0);
+
+
+    /**
+     * Setup language
+     */
     update_option('WPLANG', 'es_ES');
 }
