@@ -44,7 +44,51 @@ WordPress-On-Install is created with:
 
 ## Features
 
+This customization currently sets up the following features:
+
+1. Categories setup:
+   1. Sets default category to be "General" instead of "Uncategorized"
+2. Pages setup:
+   1. Sets the default content for the default page
+   2. Sets the default page as the home page
+   3. Creates a new page and sets it up as the blog page
+   4. Sets the Privacy page -and tries to get the content from a "privacy.txt" file-
+3. Options setup:
+   1. Enables de Welcome panel -this is specially useful when using this script as part of the multisite's new blog setup-
+   2. Sets the permalink structure to post name -which imho is the most user-friendly permalink structure ever-
+   3. Sets the language to Spanish
+   4. Sets date&time formats to Spanish
+   5. Sets the start of week to Monday
+   6. Sets the timezone to "Europe/Madrid"
+   7. Disables the year/month folder structure inside the uploads folder
+   8. Disables smilies
+
 @TODO
+
+1. Categories setup:
+   1. Sets other categories
+2. Pages setup:
+   1. Sets the Legal Notice page -and tries to get the content from a "legal.txt" file-
+   2. Sets the Cookies page -and tries to get the content from a "cookies.txt" file-
+   3. Sets the UTC page -and tries to get the content from a "utc.txt" file-
+   4. Sets the About page -and tries to get the content from a "about.txt" file-
+   5. Sets the Contact page
+3. Menues setup:
+   1. Sets the main menu with:
+      1. Homepage
+      2. About page
+      3. Blog page
+      4. Contact page
+   2. Sets the footer menu with:
+      1. Legal Notice page
+      2. Privacy page
+      3. Cookis page
+      4. UTC page
+4. Options setup:
+   1. Tie date&time formats to language selection
+   2. Add an Ubuntu-like timezone selector
+5. Other:
+   1. Add capabilities to get the default setup from git
 
 ## Sources
 
