@@ -9,7 +9,6 @@ This script aims at easing the after-install process in which we usually do the 
   - [Intro](#intro)
   - [Technologies](#technologies)
   - [How to use it](#how-to-use-it)
-    - [Examples](#examples)
   - [Features](#features)
   - [Sources](#sources)
   - [Status](#status)
