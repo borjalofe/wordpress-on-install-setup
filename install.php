@@ -16,238 +16,77 @@ function wp_install_defaults($user_id)
 {
     global $wpdb, $wp_rewrite, $table_prefix;
 
+    $cat_id = 1;
+    $content_id = 1;
+    $mainMenu = [];
+    $footerMenu = [];
 
     /**
      * CATEGORIES' SETUP
      */
-
-    /**
-     * Setup custom first category.
-     */
-    $cat_id = 1;
-    $cat_name = __('General');
-    $cat_slug = sanitize_title(_x('general', 'Slug de la categoría por defecto'));
-
-    update_option('default_category', $cat_id);
-
-    $wpdb->insert(
-        $wpdb->terms,
-        array(
-            'term_id'    => $cat_id,
-            'name'       => $cat_name,
-            'slug'       => $cat_slug,
-            'term_group' => 0,
-        )
+    // Default category
+    create_category(
+        $cat_id++,
+        'General',
+        'Artículos sin una categoría concreta',
+        'general',
+        true
     );
-    $wpdb->insert(
-        $wpdb->term_taxonomy,
-        array(
-            'term_id'     => $cat_id,
-            'taxonomy'    => 'category',
-            'description' => '',
-            'parent'      => 0,
-            'count'       => 1,
-        )
-    );
-
-    /**
-     * Setup other categories.
-     */
 
 
     /**
      * PAGES' SETUP
      */
-
-
-    /**
-     * Setup home page
-     */
-
-    $content_id = 1;
-    $now             = current_time('mysql');
-    $now_gmt         = current_time('mysql', 1);
-
-    $homepage_content = "<!-- wp:paragraph -->\n<p>";
-    $homepage_content .= __("This is an example page. It's different from a blog post because it will stay in one place and will show up in your site navigation (in most themes). Most people start with an About page that introduces them to potential site visitors. It might say something like this:");
-    $homepage_content .= "</p>\n<!-- /wp:paragraph -->\n\n";
-
-    $homepage_content .= "<!-- wp:quote -->\n<blockquote class=\"wp-block-quote\"><p>";
-    $homepage_content .= __("Hi there! I'm a bike messenger by day, aspiring actor by night, and this is my website. I live in Los Angeles, have a great dog named Jack, and I like pi&#241;a coladas. (And gettin' caught in the rain.)");
-    $homepage_content .= "</p></blockquote>\n<!-- /wp:quote -->\n\n";
-
-    $homepage_content .= "<!-- wp:paragraph -->\n<p>";
-    $homepage_content .= __('...or something like this:');
-    $homepage_content .= "</p>\n<!-- /wp:paragraph -->\n\n";
-
-    $homepage_content .= "<!-- wp:quote -->\n<blockquote class=\"wp-block-quote\"><p>";
-    $homepage_content .= __('The XYZ Doohickey Company was founded in 1971, and has been providing quality doohickeys to the public ever since. Located in Gotham City, XYZ employs over 2,000 people and does all kinds of awesome things for the Gotham community.');
-    $homepage_content .= "</p></blockquote>\n<!-- /wp:quote -->\n\n";
-
-    $homepage_content .= "<!-- wp:paragraph -->\n<p>";
-    $homepage_content .= sprintf(
-        __('As a new WordPress user, you should go to <a href="%s">your dashboard</a> to delete this page and create new pages for your content. Have fun!'),
-        admin_url()
-    );
-    $homepage_content .= "</p>\n<!-- /wp:paragraph -->";
-
-    $homepage_guid = get_option('home') . '/?page_id=' . $content_id;
-
-    $wpdb->insert(
-        $wpdb->posts,
-        array(
-            'post_author'           => $user_id,
-            'post_date'             => $now,
-            'post_date_gmt'         => $now_gmt,
-            'post_content'          => $homepage_content,
-            'post_excerpt'          => '',
-            'comment_status'        => 'closed',
-            'post_title'            => __('Home Page'),
-            'post_name'             => __('homepage'),
-            'post_modified'         => $now,
-            'post_modified_gmt'     => $now_gmt,
-            'guid'                  => $homepage_guid,
-            'post_type'             => 'page',
-            'to_ping'               => '',
-            'pinged'                => '',
-            'post_content_filtered' => '',
-        )
-    );
-    $homepage_id = $wpdb->insert_id;
-
-    $wpdb->insert(
-        $wpdb->postmeta,
-        array(
-            'post_id'    => $content_id,
-            'meta_key'   => '_wp_page_template',
-            'meta_value' => 'default',
-        )
+    // Homepage
+    $mainMenu[] = create_page(
+        $user_id,
+        $content_id++,
+        'Inicio',
+        '',
+        'home'
     );
 
-    $content_id++;
-
-    update_option('show_on_front', 'page');
-    update_option('page_on_front', $homepage_id);
-
-
-    /**
-     * Setup blog page
-     */
-
-    $blogpage_guid = get_option('home') . '/?page_id=' . $content_id;
-
-    $wpdb->insert(
-        $wpdb->posts,
-        array(
-            'post_author'           => $user_id,
-            'post_date'             => $now,
-            'post_date_gmt'         => $now_gmt,
-            'post_content'          => '',
-            'post_excerpt'          => '',
-            'comment_status'        => 'closed',
-            'post_title'            => __('Blog Page'),
-            'post_name'             => __('blog'),
-            'post_modified'         => $now,
-            'post_modified_gmt'     => $now_gmt,
-            'guid'                  => $blogpage_guid,
-            'post_type'             => 'page',
-            'to_ping'               => '',
-            'pinged'                => '',
-            'post_content_filtered' => '',
-        )
-    );
-    $blogpage_id = $wpdb->insert_id;
-
-    $wpdb->insert(
-        $wpdb->postmeta,
-        array(
-            'post_id'    => $content_id,
-            'meta_key'   => '_wp_page_template',
-            'meta_value' => 'default',
-        )
+    // About Page
+    $mainMenu[] = create_page(
+        $user_id,
+        $content_id++,
+        'Sobre Mí'
     );
 
-    update_option('page_for_posts', $blogpage_id);
+    // Blogpage
+    $mainMenu[] = create_page(
+        $user_id,
+        $content_id++,
+        'Blog',
+        '',
+        'blog'
+    );
 
+    // Contact Page
+    $mainMenu[] = create_page(
+        $user_id,
+        $content_id++,
+        'Contacto'
+    );
 
-    /**
-     * Setup privacy policy page
-     */
+    // Privacy Policy Page
+    $footerMenu[] = create_page(
+        $user_id,
+        $content_id++,
+        'Política de Privacidad',
+        '',
+        'privacy'
+    );
 
-    if (file_exists(WP_CONTENT_DIR . '/privacy.txt')) {
-        $privacy_policy_content =  file_get_contents('privacy.txt', true);
-    } else {
-        if (!class_exists('WP_Privacy_Policy_Content')) {
-            include_once(ABSPATH . 'wp-admin/includes/misc.php');
-        }
+    // Cookies Policy Page
+    $footerMenu[] = create_page(
+        $user_id,
+        $content_id++,
+        'Política de Cookies',
+        '',
+        'cookies'
+    );
 
-        $privacy_policy_content = WP_Privacy_Policy_Content::get_default_content();
-    }
-
-    if (!empty($privacy_policy_content)) {
-        $privacy_policy_guid = get_option('home') . '/?page_id=' . $content_id;
-
-        $wpdb->insert(
-            $wpdb->posts,
-            array(
-                'post_author'           => $user_id,
-                'post_date'             => $now,
-                'post_date_gmt'         => $now_gmt,
-                'post_content'          => $privacy_policy_content,
-                'post_excerpt'          => '',
-                'comment_status'        => 'closed',
-                'post_title'            => __('Privacy Policy'),
-                'post_name'             => __('privacy-policy'),
-                'post_modified'         => $now,
-                'post_modified_gmt'     => $now_gmt,
-                'guid'                  => $privacy_policy_guid,
-                'post_type'             => 'page',
-                'post_status'           => 'draft',
-                'to_ping'               => '',
-                'pinged'                => '',
-                'post_content_filtered' => '',
-            )
-        );
-        $wpdb->insert(
-            $wpdb->postmeta,
-            array(
-                'post_id'    => $content_id,
-                'meta_key'   => '_wp_page_template',
-                'meta_value' => 'default',
-            )
-        );
-        update_option('wp_page_for_privacy_policy', $content_id);
-    }
-
-    $content_id++;
-
-
-    /**
-     * Setup cookies policy page
-     * 
-     * @ToDo
-     */
-
-
-    /**
-     * Setup utc page
-     * 
-     * @ToDo
-     */
-
-
-    /**
-     * Setup about page
-     * 
-     * @ToDo
-     */
-
-
-    /**
-     * Setup contact page
-     * 
-     * @ToDo
-     */
 
 
     /**
@@ -311,4 +150,207 @@ function wp_install_defaults($user_id)
      * Setup language
      */
     update_option('WPLANG', 'es_ES');
+}
+
+/**
+ * create_page creates a new page.
+ *
+ * @global Object $wpdb
+ *
+ * @param int $user_id      User ID.
+ * @param int $id           Page ID.
+ * @param string $title     Page title.
+ * @param string $content   Page content. Defaults to empty.
+ * @param string $type      Post type. Defaults to 'post'.
+ * @param string $slug      Page slug. Defaults to empty.
+ * @param int $now          Creation time. Defaults to 0.
+ * @param int $now_gmt      Creation time (GMT format). Defaults to 0.
+ * 
+ * @return int              New page's ID.
+ */
+function create_page(
+    int $user_id,
+    int $id,
+    string $title,
+    string $content = '',
+    string $type = 'post',
+    string $slug = '',
+    int $now = 0,
+    int $now_gmt = 0
+) {
+    global $wpdb;
+
+    if ($now === 0) {
+        $now = current_time('mysql', 1);
+    }
+
+    if ($now_gmt === 0) {
+        $now_gmt = current_time('mysql');
+    }
+
+    if (empty($content)) {
+        if (file_exists(WP_CONTENT_DIR . '/uploads/' . $type . '.txt')) {
+            $content =  file_get_contents(WP_CONTENT_DIR . '/uploads/' . $type . '.txt', true);
+        } elseif ($type === 'privacy') {
+
+            if (!class_exists('WP_Privacy_Policy_Content')) {
+                include_once(ABSPATH . 'wp-admin/includes/misc.php');
+            }
+
+            $content = WP_Privacy_Policy_Content::get_default_content();
+        }
+    }
+
+    if (empty($slug)) {
+        $slug = get_slug_from_name($title);
+    }
+
+    $pageType = $type;
+
+    if (
+        $type === 'blog'
+        || $type === 'cookies'
+        || $type === 'home'
+        || $type === 'privacy'
+        || $type === 'utc'
+    ) {
+        $pageType =  'page';
+    }
+
+    $guid = get_option('home') . '/?page_id=' . $id;
+
+    $wpdb->insert(
+        $wpdb->posts,
+        array(
+            'post_author'           => $user_id,
+            'post_date'             => $now,
+            'post_date_gmt'         => $now_gmt,
+            'post_content'          => $content,
+            'post_excerpt'          => '',
+            'comment_status'        => 'closed',
+            'post_title'            => $title,
+            'post_name'             => $slug,
+            'post_modified'         => $now,
+            'post_modified_gmt'     => $now_gmt,
+            'guid'                  => $guid,
+            'post_type'             => $pageType,
+            'to_ping'               => '',
+            'pinged'                => '',
+            'post_content_filtered' => '',
+        )
+    );
+    $newId = $wpdb->insert_id;
+
+    $wpdb->insert(
+        $wpdb->postmeta,
+        array(
+            'post_id'    => $id,
+            'meta_key'   => '_wp_page_template',
+            'meta_value' => 'default',
+        )
+    );
+
+    if ($type === 'home') {
+        update_option('show_on_front', 'page');
+        update_option('page_on_front', $newId);
+    } elseif ($type === 'blog') {
+        update_option('page_for_posts', $newId);
+    } elseif ($type === 'privacy') {
+        update_option('wp_page_for_privacy_policy', $id);
+    }
+
+    return $id;
+}
+
+
+/**
+ * create_category creates a new category.
+ *
+ * @global Object $wpdb
+ *
+ * @param int $id               Category ID.
+ * @param string $name          Category name.
+ * @param string $description   Category description. Defaults to ''.
+ * @param string $slug          Category slug. Defaults to empty.
+ * @param bool $is_default      To set the new category as the default one.
+ *                              Defaults to false.
+ * 
+ * @return int                  New category's ID.
+ */
+function create_category(
+    int $id,
+    string $name,
+    string $description = '',
+    string $slug = '',
+    bool $isDefault = false
+) {
+    global $wpdb;
+
+    if (empty($slug)) {
+        $slug = get_slug_from_name($name);
+    }
+    $slug = sanitize_title(_x($slug, $slug));
+
+    if ($isDefault) {
+        update_option('default_category', $id);
+    }
+
+    $wpdb->insert(
+        $wpdb->terms,
+        array(
+            'term_id'    => $id,
+            'name'       => $name,
+            'slug'       => $slug,
+            'term_group' => 0,
+        )
+    );
+    $wpdb->insert(
+        $wpdb->term_taxonomy,
+        array(
+            'term_id'     => $id,
+            'taxonomy'    => 'category',
+            'description' => $description,
+            'parent'      => 0,
+            'count'       => 1,
+        )
+    );
+
+    return $id;
+}
+
+
+/**
+ * get_slug_from_name gets the correct slug from an intem name.
+ *
+ * @global Object $wpdb
+ *
+ * @param string $name          Item name.
+ * 
+ * @return int                  Item slug.
+ */
+function get_slug_from_name(string $name)
+{
+    return strtolower(
+        str_replace(
+            ' ',
+            '-',
+            str_replace(
+                '.',
+                '',
+                str_replace(
+                    '&',
+                    '',
+                    str_replace(
+                        'acute;',
+                        '',
+                        str_replace(
+                            'tilde;',
+                            '',
+                            htmlentities($name)
+                        )
+                    )
+                )
+            )
+        )
+    );
 }
