@@ -22,6 +22,27 @@ function wp_install_defaults($user_id)
     $footerMenu = [];
 
     /**
+     * PLUGINS' SETUP
+     */
+
+    $plugins = [
+        'contact-form-7',
+        'duplicate-post',
+        'editorplus',
+        'ewww-image-optimizer',
+        'machete',
+        'query-monitor',
+        'subscribe-to-comments-reloaded',
+        'wordpress-importer',
+        'wp-security-activity-log',
+        'wordpress-seo'
+    ];
+
+    foreach ($plugins as $plugin) {
+        add_plugin($plugin);
+    }
+
+    /**
      * CATEGORIES' SETUP
      */
     // Default category
@@ -50,7 +71,9 @@ function wp_install_defaults($user_id)
     $mainMenu[] = create_page(
         $user_id,
         $content_id++,
-        'Sobre Mí'
+        'Sobre Mí',
+        '',
+        'home'
     );
 
     // Blogpage
@@ -316,6 +339,33 @@ function create_category(
     );
 
     return $id;
+}
+
+
+/**
+ * add_plugin adds a plugin by its name.
+ *
+ * @param string $plugin        Plugin name.
+ * 
+ * @return bool                 Whether the plugin has been activated or not.
+ */
+function add_plugin(string $plugin)
+{
+    // How do I get the plugin?
+    $current = get_option('active_plugins');
+    //$plugin  = plugin_basename(trim($plugin));
+
+    if (!in_array($plugin, $current)) {
+        $current[] = $plugin;
+        sort($current);
+        do_action('activate_plugin', trim($plugin));
+        update_option('active_plugins', $current);
+        do_action('activate_' . trim($plugin));
+        do_action('activated_plugin', trim($plugin));
+        return true;
+    }
+
+    return false;
 }
 
 
