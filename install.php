@@ -73,7 +73,7 @@ function wp_install_defaults($user_id)
         $content_id++,
         'Sobre Mí',
         '',
-        'home'
+        'page'
     );
 
     // Blogpage
@@ -89,7 +89,9 @@ function wp_install_defaults($user_id)
     $mainMenu[] = create_page(
         $user_id,
         $content_id++,
-        'Contacto'
+        'Contacto',
+        '',
+        'page'
     );
 
     // Privacy Policy Page
