@@ -26,16 +26,16 @@ function wp_install_defaults($user_id)
      */
 
     $plugins = [
-        'contact-form-7',
-        'duplicate-post',
-        'editorplus',
-        'ewww-image-optimizer',
-        'machete',
-        'query-monitor',
-        'subscribe-to-comments-reloaded',
-        'wordpress-importer',
-        'wp-security-activity-log',
-        'wordpress-seo'
+        'contact-form-7/wp-contact-form-7.php',
+        'duplicate-post/duplicate-post.php',
+        'editorplus/editorplus.php',
+        'ewww-image-optimizer/ewww-image-optimizer.php',
+        'machete/machete.php',
+        'query-monitor/query-monitor.php',
+        'subscribe-to-comments-reloaded/subscribe-to-comments-reloaded.php',
+        'wordpress-importer/wordpress-importer.php',
+        'wp-security-activity-log/wp-security-activity-log.php',
+        'wordpress-seo/wp-seo.php'
     ];
 
     foreach ($plugins as $plugin) {
@@ -206,11 +206,11 @@ function create_page(
     global $wpdb;
 
     if ($now === 0) {
-        $now = current_time('mysql', 1);
+        $now = current_time('mysql');
     }
 
     if ($now_gmt === 0) {
-        $now_gmt = current_time('mysql');
+        $now_gmt = current_time('mysql', 1);
     }
 
     if (empty($content)) {
@@ -345,29 +345,112 @@ function create_category(
 
 
 /**
- * add_plugin adds a plugin by its name.
+ * add_plugin adds a plugin by its slug.
  *
- * @param string $plugin        Plugin name.
+ * @param string $plugin_slug   Plugin slug.
  * 
  * @return bool                 Whether the plugin has been activated or not.
  */
-function add_plugin(string $plugin)
+function add_plugin(string $plugin_slug)
 {
     // How do I get the plugin?
     $current = get_option('active_plugins');
-    //$plugin  = plugin_basename(trim($plugin));
+    $plugin  = plugin_basename(trim($plugin_slug));
 
-    if (!in_array($plugin, $current)) {
-        $current[] = $plugin;
-        sort($current);
-        do_action('activate_plugin', trim($plugin));
-        update_option('active_plugins', $current);
-        do_action('activate_' . trim($plugin));
-        do_action('activated_plugin', trim($plugin));
+    if (
+        !in_array($plugin, $current)
+        && replace_plugin($plugin_slug)
+    ) {
         return true;
     }
 
     return false;
+}
+
+
+/**
+ * replace_plugin adds or replace a plugin by its slug.
+ *
+ * @param string $plugin    Plugin name.
+ * 
+ * @return bool             Whether the plugin has been activated or not.
+ */
+function replace_plugin($plugin)
+{
+    $plugin_zip = 'https://downloads.wordpress.org/plugin/' . explode('/', trim($plugin))[0] . '.latest-stable.zip';
+
+
+    if (is_plugin_installed($plugin)) {
+        upgrade_plugin($plugin);
+        $installed = true;
+    } else {
+        $installed = install_plugin($plugin_zip);
+    }
+
+    if (!is_wp_error($installed) && $installed) {
+
+        $activate = activate_plugin($plugin);
+
+        if (is_null($activate)) {
+            deactivate_plugins(array($plugin));
+        }
+
+        return true;
+    }
+    return false;
+}
+
+
+/**
+ * is_plugin_installed checks if a plugin is installed.
+ *
+ * @param string $slug      Plugin slug.
+ * 
+ * @return bool             Whether the plugin is installed or not.
+ */
+function is_plugin_installed($slug)
+{
+    if (!function_exists('get_plugins')) {
+        require_once ABSPATH . 'wp-admin/includes/plugin.php';
+    }
+    $all_plugins = get_plugins();
+
+    if (!empty($all_plugins[$slug])) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+/**
+ * install_plugin installs a plugin from a zip file.
+ *
+ * @param string $slug      Plugin's zip file path or url.
+ * 
+ * @return bool|string      True if the plugin is installed correctly or error
+ *                          message otherwise.
+ */
+function install_plugin($plugin_zip)
+{
+    include_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+    wp_cache_flush();
+
+    $upgrader = new Plugin_Upgrader();
+    $installed = $upgrader->install($plugin_zip);
+
+    return $installed;
+}
+
+function upgrade_plugin($plugin_slug)
+{
+    include_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+    wp_cache_flush();
+
+    $upgrader = new Plugin_Upgrader();
+    $upgraded = $upgrader->upgrade($plugin_slug);
+
+    return $upgraded;
 }
 
 
