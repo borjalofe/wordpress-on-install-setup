@@ -9,7 +9,10 @@ This script aims at easing the after-install process in which we usually do the 
   - [Intro](#intro)
   - [Technologies](#technologies)
   - [How to use it](#how-to-use-it)
+    - [DON'Ts](#donts)
+    - [Other customizations](#other-customizations)
   - [Features](#features)
+    - [Ideas](#ideas)
   - [Sources](#sources)
   - [Status](#status)
   - [Contact](#contact)
@@ -35,11 +38,22 @@ WordPress-On-Install is created with:
 
 ## How to use it
 
-1. Get the WordPress files
+1. [Get the WordPress files](https://wordpress.org/download/) and upload them to your hosting
    1. DO NOT INSTALL WORDPRESS!!!
-2. Download the `install.php` file and upload it to the wp-content folder
+2. Download the `install.php` file and upload it to the `wp-content` folder
 3. Install WordPress -just do the 5-minutes install process
 4. Done!
+
+### DON'Ts
+
+1. Don't use a 1-click install -you cannot use this script with them-
+2. Don't install WordPress BEFORE uploading the script
+
+### Other customizations
+
+The script looks for default content in the `wp-content/uploads` folder for the default pages.
+
+Thus when you'll upload the `install.php` file to the `wp-content` folder, you can also upload default content -e.g. `cookies.txt`- to the `wp-content/uploads` folder and the script will use that as default content for a page of the related type -e.g. page type `cookies` will look for content in `wp-content/uploads/cookies.txt`-.
 
 ## Features
 
@@ -55,9 +69,13 @@ This customization currently sets up the following features:
    5. Sets the Cookies page -and tries to get the content from a "cookies.txt" file-
    6. Sets the About page -and tries to get the content from a "about.txt" file-
    7. Sets the Contact page
+   8. Sets default content from a `type.txt` for every page with type `type`.
+      1. This feature helps set subsites up in a multisite
 3. Options setup:
-   1. Enables de Welcome panel -this is specially useful when using this script as part of the multisite's new blog setup-
-   2. Sets the permalink structure to post name -which imho is the most user-friendly permalink structure ever-
+   1. Enables de Welcome panel -this is specially useful when using this script
+      as part of the multisite's new blog setup-
+   2. Sets the permalink structure to post name -which imho is the most
+      user-friendly permalink structure ever-
    3. Sets the language to Spanish
    4. Sets date&time formats to Spanish
    5. Sets the start of week to Monday
@@ -81,14 +99,21 @@ This customization currently sets up the following features:
       3. Cookies page
 3. Options setup:
    1. Tie date&time formats to language selection
-   2. Add an Ubuntu-like timezone selector
-4. Other:
-   1. Add capabilities to get the default setup from git
+
+### Ideas
+
+1. Modify the 5-minutes install process form
+   1. Add an Ubuntu-like timezone selector
+2. Add capabilities to get the default setup from git
+3. Connect to [Gutenberg Hub](https://gutenberghub.com) to get default page templates
 
 ## Sources
 
 1. My own [Custom WordPress Installation -at GitLab-](https://gitlab.com/borjalofe/custom-wordpress-installation)
 2. Some ideas from [my WordPress VVV custom site template -at GitLab-](https://gitlab.com/borjalofe/custom-site-template)
+3. [Docs at WordPress Developer](https://developer.wordpress.org/reference/functions/wp_install_defaults/)
+4. `add_menu_item` uses [`wp_update_nav_menu_item`](https://developer.wordpress.org/reference/functions/wp_update_nav_menu_item/)
+5. [Automatically download and activate plugins](https://wpreset.com/programmatically-automatically-download-install-activate-wordpress-plugins/)
 
 ## Status
 
