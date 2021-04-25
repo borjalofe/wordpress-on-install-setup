@@ -34,7 +34,7 @@ function wp_install_defaults($user_id)
         'query-monitor/query-monitor.php',
         'subscribe-to-comments-reloaded/subscribe-to-comments-reloaded.php',
         'wordpress-importer/wordpress-importer.php',
-        'wp-security-activity-log/wp-security-activity-log.php',
+        'wp-activity-log/wp-activity-log.php',
         'wordpress-seo/wp-seo.php'
     ];
 
@@ -58,13 +58,23 @@ function wp_install_defaults($user_id)
     /**
      * PAGES' SETUP
      */
+    // Substitutions
+    $user_data = get_userdata($user_id);
+    $substitutions = [
+        'URL' => get_option('siteurl'),
+        'Marca' => get_option('blogname'),
+        'Correo' => $user_data->user_email
+    ];
+
     // Homepage
     $mainMenu[] = create_page(
         $user_id,
         $content_id++,
         'Inicio',
         '',
-        'home'
+        'home',
+        '',
+        $substitutions
     );
 
     // About Page
@@ -73,7 +83,9 @@ function wp_install_defaults($user_id)
         $content_id++,
         'Sobre Mí',
         '',
-        'page'
+        'page',
+        '',
+        $substitutions
     );
 
     // Blogpage
@@ -82,7 +94,9 @@ function wp_install_defaults($user_id)
         $content_id++,
         'Blog',
         '',
-        'blog'
+        'blog',
+        '',
+        $substitutions
     );
 
     // Contact Page
@@ -91,7 +105,9 @@ function wp_install_defaults($user_id)
         $content_id++,
         'Contacto',
         '',
-        'page'
+        'page',
+        '',
+        $substitutions
     );
 
     // Privacy Policy Page
@@ -100,7 +116,9 @@ function wp_install_defaults($user_id)
         $content_id++,
         'Política de Privacidad',
         '',
-        'privacy'
+        'privacy',
+        '',
+        $substitutions
     );
 
     // Cookies Policy Page
@@ -109,7 +127,9 @@ function wp_install_defaults($user_id)
         $content_id++,
         'Política de Cookies',
         '',
-        'cookies'
+        'cookies',
+        '',
+        $substitutions
     );
 
 
@@ -200,6 +220,7 @@ function create_page(
     string $content = '',
     string $type = 'post',
     string $slug = '',
+    $substitutions = [],
     int $now = 0,
     int $now_gmt = 0
 ) {
@@ -226,6 +247,15 @@ function create_page(
         }
     }
 
+    if (
+        !empty($content)
+        && count($substitutions) > 0
+    ) {
+        foreach ($substitutions as $search => $replace) {
+            $content = str_replace('{{' . $search . '}}', $replace, $content);
+        }
+    }
+
     if (empty($slug)) {
         $slug = get_slug_from_name($title);
     }
@@ -233,11 +263,8 @@ function create_page(
     $pageType = $type;
 
     if (
-        $type === 'blog'
-        || $type === 'cookies'
-        || $type === 'home'
-        || $type === 'privacy'
-        || $type === 'utc'
+        $type !== 'post'
+        && $type !== 'page'
     ) {
         $pageType =  'page';
     }
@@ -281,7 +308,7 @@ function create_page(
     } elseif ($type === 'blog') {
         update_option('page_for_posts', $newId);
     } elseif ($type === 'privacy') {
-        update_option('wp_page_for_privacy_policy', $id);
+        update_option('wp_page_for_privacy_policy', $newId);
     }
 
     return $id;
@@ -391,9 +418,9 @@ function replace_plugin($plugin)
 
         $activate = activate_plugin($plugin);
 
-        if (is_null($activate)) {
-            deactivate_plugins(array($plugin));
-        }
+        //if (is_null($activate)) {
+        //    deactivate_plugins(array($plugin));
+        //}
 
         return true;
     }
