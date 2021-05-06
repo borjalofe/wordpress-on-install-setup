@@ -18,8 +18,14 @@ function wp_install_defaults($user_id)
 
     $cat_id = 1;
     $content_id = 1;
-    $mainMenu = [];
-    $footerMenu = [];
+    $mainMenu = [
+        'id' => wp_get_nav_menu_object('primary')['term_id'],
+        'pages' => []
+    ];
+    $footerMenu = [
+        'id' => wp_get_nav_menu_object('footer')['term_id'],
+        'pages' => []
+    ];
 
     /**
      * PLUGINS' SETUP
@@ -67,7 +73,7 @@ function wp_install_defaults($user_id)
     ];
 
     // Homepage
-    $mainMenu[] = create_page(
+    $mainMenu['pages'][] = create_page(
         $user_id,
         $content_id++,
         'Inicio',
@@ -78,7 +84,7 @@ function wp_install_defaults($user_id)
     );
 
     // About Page
-    $mainMenu[] = create_page(
+    $mainMenu['pages'][] = create_page(
         $user_id,
         $content_id++,
         'Sobre Mí',
@@ -89,7 +95,7 @@ function wp_install_defaults($user_id)
     );
 
     // Blogpage
-    $mainMenu[] = create_page(
+    $mainMenu['pages'][] = create_page(
         $user_id,
         $content_id++,
         'Blog',
@@ -100,7 +106,7 @@ function wp_install_defaults($user_id)
     );
 
     // Contact Page
-    $mainMenu[] = create_page(
+    $mainMenu['pages'][] = create_page(
         $user_id,
         $content_id++,
         'Contacto',
@@ -111,7 +117,7 @@ function wp_install_defaults($user_id)
     );
 
     // Privacy Policy Page
-    $footerMenu[] = create_page(
+    $footerMenu['pages'][] = create_page(
         $user_id,
         $content_id++,
         'Política de Privacidad',
@@ -122,7 +128,7 @@ function wp_install_defaults($user_id)
     );
 
     // Cookies Policy Page
-    $footerMenu[] = create_page(
+    $footerMenu['pages'][] = create_page(
         $user_id,
         $content_id++,
         'Política de Cookies',
@@ -146,6 +152,8 @@ function wp_install_defaults($user_id)
      */
 
     update_user_meta($user_id, 'show_welcome_panel', 1);
+
+    update_option('blogdescription', '');
 
     update_option('selection', 'custom');
 
@@ -235,8 +243,8 @@ function create_page(
     }
 
     if (empty($content)) {
-        if (file_exists(WP_CONTENT_DIR . '/uploads/' . $type . '.txt')) {
-            $content =  file_get_contents(WP_CONTENT_DIR . '/uploads/' . $type . '.txt', true);
+        if (file_exists(WP_CONTENT_DIR . '/uploads/pages/' . $type . '.txt')) {
+            $content =  file_get_contents(WP_CONTENT_DIR . '/uploads/pages/' . $type . '.txt', true);
         } elseif ($type === 'privacy') {
 
             if (!class_exists('WP_Privacy_Policy_Content')) {
@@ -312,6 +320,29 @@ function create_page(
     }
 
     return $id;
+}
+
+
+/**
+ * config_plugin configs a plugin.
+ *
+ * @param string $plugin    Plugin name.
+ * 
+ * @return bool             Whether the plugin has been set or not.
+ */
+function config_page($page)
+{
+    $config_file = WP_CONTENT_DIR . "/uploads/pages/$page.json";
+    if (!file_exists($config_file)) {
+        return false;
+    }
+
+    $config = json_decode(file_get_contents($config_file, true), true);
+    foreach ($config as $option_key => $option_value) {
+        update_option($option_key, $option_value);
+    }
+
+    return true;
 }
 
 
@@ -404,7 +435,8 @@ function add_plugin(string $plugin_slug)
  */
 function replace_plugin($plugin)
 {
-    $plugin_zip = 'https://downloads.wordpress.org/plugin/' . explode('/', trim($plugin))[0] . '.latest-stable.zip';
+    $plugin_name = explode('/', trim($plugin))[0];
+    $plugin_zip = "https://downloads.wordpress.org/plugin/$plugin_name.latest-stable.zip";
 
 
     if (is_plugin_installed($plugin)) {
@@ -412,6 +444,7 @@ function replace_plugin($plugin)
         $installed = true;
     } else {
         $installed = install_plugin($plugin_zip);
+        config_plugin($plugin_name);
     }
 
     if (!is_wp_error($installed) && $installed) {
@@ -425,6 +458,29 @@ function replace_plugin($plugin)
         return true;
     }
     return false;
+}
+
+
+/**
+ * config_plugin configs a plugin.
+ *
+ * @param string $plugin    Plugin name.
+ * 
+ * @return bool             Whether the plugin has been set or not.
+ */
+function config_plugin($plugin)
+{
+    $config_file = WP_CONTENT_DIR . "/uploads/plugins/$plugin.json";
+    if (!file_exists($config_file)) {
+        return false;
+    }
+
+    $config = json_decode(file_get_contents($config_file, true), true);
+    foreach ($config as $option_key => $option_value) {
+        update_option($option_key, $option_value);
+    }
+
+    return true;
 }
 
 
