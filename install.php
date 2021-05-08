@@ -18,14 +18,8 @@ function wp_install_defaults($user_id)
 
     $cat_id = 1;
     $content_id = 1;
-    $mainMenu = [
-        'id' => wp_get_nav_menu_object('primary')['term_id'],
-        'pages' => []
-    ];
-    $footerMenu = [
-        'id' => wp_get_nav_menu_object('footer')['term_id'],
-        'pages' => []
-    ];
+    $mainMenu = [];
+    $footerMenu = [];
 
     /**
      * PLUGINS' SETUP
@@ -73,7 +67,7 @@ function wp_install_defaults($user_id)
     ];
 
     // Homepage
-    $mainMenu['pages'][] = create_page(
+    $mainMenu[] = create_page(
         $user_id,
         $content_id++,
         'Inicio',
@@ -84,7 +78,7 @@ function wp_install_defaults($user_id)
     );
 
     // About Page
-    $mainMenu['pages'][] = create_page(
+    $mainMenu[] = create_page(
         $user_id,
         $content_id++,
         'Sobre Mí',
@@ -95,7 +89,7 @@ function wp_install_defaults($user_id)
     );
 
     // Blogpage
-    $mainMenu['pages'][] = create_page(
+    $mainMenu[] = create_page(
         $user_id,
         $content_id++,
         'Blog',
@@ -106,7 +100,7 @@ function wp_install_defaults($user_id)
     );
 
     // Contact Page
-    $mainMenu['pages'][] = create_page(
+    $mainMenu[] = create_page(
         $user_id,
         $content_id++,
         'Contacto',
@@ -117,7 +111,7 @@ function wp_install_defaults($user_id)
     );
 
     // Privacy Policy Page
-    $footerMenu['pages'][] = create_page(
+    $footerMenu[] = create_page(
         $user_id,
         $content_id++,
         'Política de Privacidad',
@@ -128,7 +122,7 @@ function wp_install_defaults($user_id)
     );
 
     // Cookies Policy Page
-    $footerMenu['pages'][] = create_page(
+    $footerMenu[] = create_page(
         $user_id,
         $content_id++,
         'Política de Cookies',
@@ -145,6 +139,9 @@ function wp_install_defaults($user_id)
      * 
      * @ToDo
      */
+
+    create_menu('Principal', 'primary', $mainMenu);
+    create_menu('Legal', 'footer', $footerMenu);
 
 
     /**
@@ -203,6 +200,63 @@ function wp_install_defaults($user_id)
      * Setup language
      */
     update_option('WPLANG', 'es_ES');
+}
+
+/**
+ * create_menu creates a new menu.
+ *
+ * @global Object $wpdb
+ *
+ * @param string $name      Menu name.
+ * @param string $location  Menu location. Defaults to empty.
+ * @param array $items      Menus items array. Defaults to empty.
+ * 
+ * @return int              New menu's ID.
+ */
+function create_menu(
+    string $name,
+    string $location = '',
+    $items = []
+) {
+    $menu_id = wp_create_nav_menu($name);
+
+    if (is_wp_error($menu_id)) {
+        return false;
+    }
+
+    if (count($items) > 0) {
+        foreach ($items as $item) {
+            if (
+                is_wp_error(
+                    wp_update_nav_menu_item(
+                        $menu_id,
+                        0,
+                        [
+                            'menu-item-object-id'       => $item,
+                            'menu-item-type'            => 'post_type',
+                            'menu-item-post-date'       => current_time('mysql'),
+                            'menu-item-post-date-gmt'   => current_time('mysql', 1),
+                        ]
+                    )
+                )
+            ) {
+                return false;
+            }
+        }
+    }
+
+    if ($location) {
+        $menu = wp_get_nav_menu_object($menu_id);
+
+        if (!$menu) {
+            return false;
+        }
+        $locations = get_theme_mod('nav_menu_locations');
+        $locations[$location] = $menu->term_id;
+        set_theme_mod('nav_menu_locations', $locations);
+    }
+
+    return true;
 }
 
 /**
