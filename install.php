@@ -17,7 +17,7 @@ function wp_install_defaults($user_id)
     global $wpdb, $wp_rewrite, $table_prefix;
 
     $cat_id = 1;
-    $content_id = 1;
+    $content_id = 2;
     $mainMenu = [];
     $footerMenu = [];
 
@@ -34,8 +34,7 @@ function wp_install_defaults($user_id)
         'query-monitor/query-monitor.php',
         'subscribe-to-comments-reloaded/subscribe-to-comments-reloaded.php',
         'wordpress-importer/wordpress-importer.php',
-        'wp-activity-log/wp-activity-log.php',
-        'wordpress-seo/wp-seo.php'
+        'wp-activity-log/wp-activity-log.php'
     ];
 
     foreach ($plugins as $plugin) {
@@ -226,14 +225,18 @@ function create_menu(
 
     if (count($items) > 0) {
         foreach ($items as $item) {
+            $post = get_post($item);
             if (
                 is_wp_error(
                     wp_update_nav_menu_item(
                         $menu_id,
                         0,
                         [
-                            'menu-item-object-id'       => $item,
+                            'menu-item-title'           => $post->post_title,
+                            'menu-item-object-id'       => $post->ID,
+                            'menu-item-object'          => 'page',
                             'menu-item-type'            => 'post_type',
+                            'menu-item-status'          => 'publish',
                             'menu-item-post-date'       => current_time('mysql'),
                             'menu-item-post-date-gmt'   => current_time('mysql', 1),
                         ]
@@ -373,7 +376,8 @@ function create_page(
         update_option('wp_page_for_privacy_policy', $newId);
     }
 
-    return $id;
+    //return $id;
+    return $newId;
 }
 
 
