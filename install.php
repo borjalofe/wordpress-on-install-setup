@@ -58,12 +58,7 @@ function wp_install_defaults($user_id)
      * PAGES' SETUP
      */
     // Substitutions
-    $user_data = get_userdata($user_id);
-    $substitutions = [
-        'URL' => get_option('siteurl'),
-        'Marca' => get_option('blogname'),
-        'Correo' => $user_data->user_email
-    ];
+    $substitutions = getSubstitutions($user_id);
 
     // Homepage
     $mainMenu[] = create_page(
@@ -98,17 +93,6 @@ function wp_install_defaults($user_id)
         $substitutions
     );
 
-    // Contact Page
-    $mainMenu[] = create_page(
-        $user_id,
-        $content_id++,
-        'Contacto',
-        '',
-        'page',
-        '',
-        $substitutions
-    );
-
     // Privacy Policy Page
     $footerMenu[] = create_page(
         $user_id,
@@ -130,6 +114,19 @@ function wp_install_defaults($user_id)
         '',
         $substitutions
     );
+
+    // Contact Page
+    $contactPage = create_page(
+        $user_id,
+        $content_id++,
+        'Contacto',
+        '',
+        'page',
+        '',
+        $substitutions
+    );
+    $mainMenu[] = $contactPage;
+    $footerMenu[] = $contactPage;
 
 
 
@@ -629,4 +626,21 @@ function get_slug_from_name(string $name)
             )
         )
     );
+}
+
+function getSubstitutions($user_id)
+{
+    $user_data = get_userdata($user_id);
+    return [
+        'brand' => get_option('blogname'),
+        'company_address' => '',
+        'company_city' => '',
+        'company_email' => $user_data->user_email,
+        'company_id_number' => '',
+        'company_name' => '',
+        'company_phone' => '',
+        'email' => $user_data->user_email,
+        'company_register_info' => '',
+        'url' => get_option('siteurl')
+    ];
 }
